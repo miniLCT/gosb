@@ -1,0 +1,2 @@
+# gosb
+go silver bullet
