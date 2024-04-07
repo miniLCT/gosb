@@ -1,0 +1,17 @@
+[[mathrand]]
+file = "mathrand.txt"
+beforerun = "rm -f -- mathrand.txt"
+run = "env BENCHMARK_TARGET=math_rand go test -run=NOTEST -bench=. -count=5 > mathrand.txt"
+
+[[fastrand]]
+file = "fastrand.txt"
+beforerun = "rm -f -- fastrand.txt"
+run = "go test -run=NOTEST -bench=. -count=5 > fastrand.txt"
+afterrun = "benchstat mathrand.txt fastrand.txt"
+
+[[compare]]
+file = "report.txt"
+beforerun = "rm -f -- mr.txt && rm -f -- fr.txt"
+run = "env BENCHMARK_TARGET=math_rand go test -run=NOTEST -bench=. -count=5 -timeout=60m > mr.txt && go test -run=NOTEST -bench=. -count=5 -timeout=60m > fr.txt"
+afterrun = "benchstat mr.txt fr.txt > report.txt"
+
