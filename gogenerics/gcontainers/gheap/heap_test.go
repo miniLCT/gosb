@@ -1,13 +1,12 @@
 package gheap
 
 import (
-	"math/rand"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/miniLCT/gosb/gcontainers/gslice"
+	"github.com/miniLCT/gosb/gogenerics/gcontainers/gslice"
+	"github.com/miniLCT/gosb/hack/fastrand"
 )
 
 var charSet = []string{
@@ -20,7 +19,7 @@ func genString() string {
 	l := 4
 	var str string
 	for i := 0; i < l; i++ {
-		str += charSet[rand.Intn(len(charSet))]
+		str += charSet[fastrand.Intn(len(charSet))]
 	}
 	return str
 }
@@ -34,12 +33,11 @@ func TestHeap(t *testing.T) {
 	assert := assert.New(t)
 	t.Parallel()
 
-	rand.Seed(time.Now().Unix())
 	nds := []*Node{}
 	for i := 0; i < 10; i++ {
 		nds = append(nds, &Node{
 			Name:  genString(),
-			Count: rand.Intn(4),
+			Count: fastrand.Intn(4),
 		})
 	}
 	less := func(a, b *Node) bool {
@@ -54,7 +52,7 @@ func TestHeap(t *testing.T) {
 	for i := 0; i <= 100; i++ {
 		Push(hp, &Node{
 			Name:  genString(),
-			Count: rand.Intn(4),
+			Count: fastrand.Intn(4),
 		})
 		for len(hp.data) > 0 {
 			v := Pop(hp)
@@ -70,7 +68,7 @@ func TestHeap(t *testing.T) {
 	for i := 0; i <= 100; i++ {
 		tmpSlice := gslice.Copy(hp.data)
 		gslice.Shuffle(tmpSlice)
-		h := NewWithData(tmpSlice[:rand.Int()%len(tmpSlice)], less)
+		h := NewWithData(tmpSlice[:fastrand.Int()%len(tmpSlice)], less)
 		tpchecks := make([]*Node, 0)
 		for len(h.data) > 0 {
 			v := Pop(h)
