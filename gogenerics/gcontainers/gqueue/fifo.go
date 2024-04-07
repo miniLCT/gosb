@@ -1,8 +1,8 @@
 package gqueue
 
 import (
-	"github.com/miniLCT/gosb/gcontainers/glist"
 	"github.com/miniLCT/gosb/gogenerics/constraints"
+	"github.com/miniLCT/gosb/gogenerics/gcontainers/glist"
 )
 
 // Queue is a simple FIFO queue, not thread-safe
