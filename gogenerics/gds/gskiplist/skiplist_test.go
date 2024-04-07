@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"icode.baidu.com/baidu/passport/gogenerics/internal/fastrand"
+	"github.com/miniLCT/gosb/hack/fastrand"
 )
 
 const (

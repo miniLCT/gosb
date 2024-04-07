@@ -5,6 +5,7 @@ import (
 )
 
 // AtomicError defines an atomic error.
+
 type AtomicError struct {
 	err atomic.Value // error
 }

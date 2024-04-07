@@ -40,10 +40,7 @@ func BenchmarkAtomicError(b *testing.B) {
 	b.Run("Load", func(b *testing.B) {
 		var done uint32
 		go func() {
-			for {
-				if atomic.LoadUint32(&done) != 0 {
-					break
-				}
+			for atomic.LoadUint32(&done) == 0 {
 				wg.Add(1)
 				go func() {
 					aerr.Set(errDummy)
@@ -62,10 +59,7 @@ func BenchmarkAtomicError(b *testing.B) {
 	b.Run("Set", func(b *testing.B) {
 		var done uint32
 		go func() {
-			for {
-				if atomic.LoadUint32(&done) != 0 {
-					break
-				}
+			for atomic.LoadUint32(&done) == 0 {
 				wg.Add(1)
 				go func() {
 					_ = aerr.Load()

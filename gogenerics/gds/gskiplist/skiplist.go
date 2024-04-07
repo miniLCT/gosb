@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"math/bits"
 
-	"icode.baidu.com/baidu/passport/gogenerics/constraints"
-	"icode.baidu.com/baidu/passport/gogenerics/gtype"
-	"icode.baidu.com/baidu/passport/gogenerics/internal/fastrand"
+	"github.com/miniLCT/gosb/gogenerics/constraints"
+	"github.com/miniLCT/gosb/hack/fastrand"
 )
 
 const (
@@ -144,13 +143,13 @@ func (t *SkipList[K, V]) findExtended(key K, findGreaterOrEqual bool) (*SkipList
 // Find Expected Complexity O(log(n))
 func (t *SkipList[K, V]) Find(key K) (V, bool) {
 	if t == nil {
-		return gtype.Empty[V](), false
+		return constraints.Empty[V](), false
 	}
 
 	if elem, ok := t.findExtended(key, false); ok {
 		return elem.value, true
 	}
-	return gtype.Empty[V](), false
+	return constraints.Empty[V](), false
 }
 
 // FindGreaterOrEqual finds the first element, that is greater or equal to the given ListElement e.
@@ -225,7 +224,7 @@ func (t *SkipList[K, V]) Delete(key K) {
 // Insert inserts the given ListElement into the skiplist.
 // Insert Expected Complexity O(log(n)).
 //
-//gocyclo:ignore
+// gocyclo:ignore
 func (t *SkipList[K, V]) Insert(key K, e V) {
 	if t == nil {
 		return
@@ -349,7 +348,7 @@ func (t *SkipList[K, V]) Insert(key K, e V) {
 // GetValue extracts the ListElement value from a skiplist node.
 func (e *SkipListElement[K, V]) GetValue() V {
 	if e == nil {
-		return gtype.Empty[V]()
+		return constraints.Empty[V]()
 	}
 	return e.value
 }
