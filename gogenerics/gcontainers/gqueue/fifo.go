@@ -95,5 +95,3 @@ func Gen[T any, S ~[]T](s S) *Queue[T] {
 	}
 	return q
 }
-
-// todo: wrap queue with interface
