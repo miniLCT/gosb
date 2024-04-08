@@ -7,7 +7,7 @@ import (
 	"unsafe"
 )
 
-// String2Bytes converts string to []byte without memory allocation
+// StringToSlice converts string to []byte without memory allocation
 // Warning: read-only
 func StringToSlice(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(
