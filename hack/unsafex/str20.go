@@ -16,7 +16,7 @@ func SliceToString(b []byte) string {
 	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
-// StringToSlice string to slice with out data copy
+// StringToSlice string to slice without data copy
 func StringToSlice(s string) []byte {
 	return unsafe.Slice(unsafe.StringData(s), len(s))
 }
