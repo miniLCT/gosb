@@ -2,7 +2,7 @@
 go silver bullet: a collection of go utilities.
 
 # Go Required Version
-need go 1.20 or later.
+need go 1.20 or later. ⚠️
 
 
 # Install
