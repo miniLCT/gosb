@@ -1,9 +1,9 @@
 package gnumerics
 
-import "github.com/miniLCT/gosb/gogenerics/constraints"
+import "github.com/miniLCT/gosb/gogenerics/gconstraints"
 
 // Max returns the maximum of two values
-func Max[T constraints.Ordered](a, b T) T {
+func Max[T gconstraints.Ordered](a, b T) T {
 	if a > b {
 		return a
 	}
@@ -11,7 +11,7 @@ func Max[T constraints.Ordered](a, b T) T {
 }
 
 // MaxCollection returns the maximum value in a collection. Returns zero value when collection is empty
-func MaxCollection[T constraints.Ordered](collection []T) T {
+func MaxCollection[T gconstraints.Ordered](collection []T) T {
 	var maxC T
 	l := len(collection)
 	if l == 0 {
@@ -50,7 +50,7 @@ func MaxBy[T any](collection []T, cmp func(a T, b T) bool) T {
 }
 
 // Min returns the minimum of two values.
-func Min[T constraints.Ordered](a, b T) T {
+func Min[T gconstraints.Ordered](a, b T) T {
 	if a < b {
 		return a
 	}
@@ -58,7 +58,7 @@ func Min[T constraints.Ordered](a, b T) T {
 }
 
 // MinCollection returns the minimum value in a collection. Returns zero value when collection is empty
-func MinCollection[T constraints.Ordered](collection []T) T {
+func MinCollection[T gconstraints.Ordered](collection []T) T {
 	var minC T
 	l := len(collection)
 	if l == 0 {

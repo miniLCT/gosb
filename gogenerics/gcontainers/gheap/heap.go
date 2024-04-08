@@ -1,16 +1,16 @@
 package gheap
 
-import "github.com/miniLCT/gosb/gogenerics/constraints"
+import "github.com/miniLCT/gosb/gogenerics/gconstraints"
 
 // Heap is the generics implementation of heap
 
 type Heap[T any] struct {
 	data []T
-	less constraints.Less[T]
+	less gconstraints.Less[T]
 }
 
 // New constructs a new heap
-func New[T any](less constraints.Less[T]) *Heap[T] {
+func New[T any](less gconstraints.Less[T]) *Heap[T] {
 	return &Heap[T]{
 		data: make([]T, 0),
 		less: less,
@@ -18,7 +18,7 @@ func New[T any](less constraints.Less[T]) *Heap[T] {
 }
 
 // NewWithData build a heap tree with data
-func NewWithData[T any](data []T, less constraints.Less[T]) *Heap[T] {
+func NewWithData[T any](data []T, less gconstraints.Less[T]) *Heap[T] {
 	h := New(less)
 	h.data = data
 	heapSort(h.data, less)
@@ -26,7 +26,7 @@ func NewWithData[T any](data []T, less constraints.Less[T]) *Heap[T] {
 }
 
 // siftDown implements the heap property on v[lo:hi].
-func siftDown[T any](x []T, index int, less constraints.Less[T]) {
+func siftDown[T any](x []T, index int, less gconstraints.Less[T]) {
 	for {
 		left := (index * 2) + 1
 		right := left + 1
@@ -45,7 +45,7 @@ func siftDown[T any](x []T, index int, less constraints.Less[T]) {
 	}
 }
 
-func siftUp[T any](x []T, index int, less constraints.Less[T]) {
+func siftUp[T any](x []T, index int, less gconstraints.Less[T]) {
 	for index > 0 {
 		p := (index - 1) / 2
 		if less(x[p], x[index]) {
@@ -57,7 +57,7 @@ func siftUp[T any](x []T, index int, less constraints.Less[T]) {
 }
 
 // heapSort is min-heap sort
-func heapSort[T any](v []T, less constraints.Less[T]) {
+func heapSort[T any](v []T, less gconstraints.Less[T]) {
 	n := len(v)
 	for i := n/2 - 1; i >= 0; i-- {
 		siftDown(v, i, less)

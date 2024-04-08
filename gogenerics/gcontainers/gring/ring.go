@@ -1,7 +1,7 @@
 // Package gring implements operations on circular lists support generics. Note not safety in concurrent operation.
 package gring
 
-import "github.com/miniLCT/gosb/gogenerics/constraints"
+import "github.com/miniLCT/gosb/gogenerics/gconstraints"
 
 // A Ring is an element of a circular list, or ring.
 // Rings do not have a beginning or end; a pointer to any ring element
@@ -125,7 +125,7 @@ func (r *Ring[V]) Len() int {
 
 // Do calls function f on each element of the ring, in forward order.
 // The behavior of Do is undefined if f changes *r.
-func (r *Ring[V]) Do(f constraints.Consumer[any]) {
+func (r *Ring[V]) Do(f gconstraints.Consumer[any]) {
 	if r != nil {
 		f(r.Value)
 		for p := r.Next(); p != r; p = p.next {

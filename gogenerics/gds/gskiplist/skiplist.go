@@ -2,9 +2,9 @@ package gskiplist
 
 import (
 	"fmt"
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"math/bits"
 
-	"github.com/miniLCT/gosb/gogenerics/constraints"
 	"github.com/miniLCT/gosb/hack/fastrand"
 )
 
@@ -14,7 +14,7 @@ const (
 	maxLevel = 25
 )
 
-type SkipListItfc[K constraints.Ordered, V any] interface {
+type SkipListItfc[K gconstraints.Ordered, V any] interface {
 	IsEmpty() bool
 	Find(key K) (V, bool)
 	FindGreaterOrEqual(key K) (*SkipListElement[K, V], bool)
@@ -34,7 +34,7 @@ var _ SkipListItfc[int, int] = (*SkipList[int, int])(nil)
 // SkipListElement represents one actual Node in the skiplist structure.
 // It saves the actual element, pointers to the next nodes and a pointer to one previous node.
 
-type SkipListElement[K constraints.Ordered, V any] struct {
+type SkipListElement[K gconstraints.Ordered, V any] struct {
 	next  [maxLevel]*SkipListElement[K, V]
 	level int
 	key   K
@@ -44,7 +44,7 @@ type SkipListElement[K constraints.Ordered, V any] struct {
 
 // SkipList is the actual skiplist representation.
 // It saves all nodes accessible from the start and end and keeps track of element count, levels.
-type SkipList[K constraints.Ordered, V any] struct {
+type SkipList[K gconstraints.Ordered, V any] struct {
 	startLevels  [maxLevel]*SkipListElement[K, V]
 	endLevels    [maxLevel]*SkipListElement[K, V]
 	maxNewLevel  int
@@ -53,7 +53,7 @@ type SkipList[K constraints.Ordered, V any] struct {
 }
 
 // New returns a new empty, initialized Skiplist.
-func New[K constraints.Ordered, V any]() *SkipList[K, V] {
+func New[K gconstraints.Ordered, V any]() *SkipList[K, V] {
 	list := &SkipList[K, V]{
 		startLevels:  [maxLevel]*SkipListElement[K, V]{},
 		endLevels:    [maxLevel]*SkipListElement[K, V]{},
@@ -143,13 +143,13 @@ func (t *SkipList[K, V]) findExtended(key K, findGreaterOrEqual bool) (*SkipList
 // Find Expected Complexity O(log(n))
 func (t *SkipList[K, V]) Find(key K) (V, bool) {
 	if t == nil {
-		return constraints.Empty[V](), false
+		return gconstraints.Empty[V](), false
 	}
 
 	if elem, ok := t.findExtended(key, false); ok {
 		return elem.value, true
 	}
-	return constraints.Empty[V](), false
+	return gconstraints.Empty[V](), false
 }
 
 // FindGreaterOrEqual finds the first element, that is greater or equal to the given ListElement e.
@@ -348,7 +348,7 @@ func (t *SkipList[K, V]) Insert(key K, e V) {
 // GetValue extracts the ListElement value from a skiplist node.
 func (e *SkipListElement[K, V]) GetValue() V {
 	if e == nil {
-		return constraints.Empty[V]()
+		return gconstraints.Empty[V]()
 	}
 	return e.value
 }

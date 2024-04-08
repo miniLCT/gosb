@@ -1,6 +1,6 @@
 package gmap
 
-import "github.com/miniLCT/gosb/gogenerics/constraints"
+import "github.com/miniLCT/gosb/gogenerics/gconstraints"
 
 // Keys returns a slice of keys from the map. Note that the keys will be an indeterminate order
 func Keys[K comparable, V any](m map[K]V) []K {
@@ -52,11 +52,11 @@ func Clear[K comparable, V any](m map[K]V) {
 }
 
 // Map2Entries transforms a map into slice of key-value pairs
-func Map2Entries[K comparable, V any](m map[K]V) []constraints.Entry[K, V] {
-	entries := make([]constraints.Entry[K, V], 0, len(m))
+func Map2Entries[K comparable, V any](m map[K]V) []gconstraints.Entry[K, V] {
+	entries := make([]gconstraints.Entry[K, V], 0, len(m))
 
 	for k, v := range m {
-		entries = append(entries, constraints.Entry[K, V]{
+		entries = append(entries, gconstraints.Entry[K, V]{
 			Key:   k,
 			Value: v,
 		})
@@ -65,7 +65,7 @@ func Map2Entries[K comparable, V any](m map[K]V) []constraints.Entry[K, V] {
 }
 
 // Entries2Map transforms a slice of key-value pairs into a map
-func Entries2Map[K comparable, V any](entries []constraints.Entry[K, V]) map[K]V {
+func Entries2Map[K comparable, V any](entries []gconstraints.Entry[K, V]) map[K]V {
 	m := make(map[K]V, len(entries))
 
 	for _, e := range entries {

@@ -1,7 +1,7 @@
 package gslice
 
 import (
-	"github.com/miniLCT/gosb/gogenerics/constraints"
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"github.com/miniLCT/gosb/hack/fastrand"
 )
 
@@ -155,7 +155,7 @@ func Merge[T any](s1, s2 []T) []T {
 }
 
 // IsSorted reports whether x is sorted in ascending order
-func IsSorted[T constraints.Ordered](x []T) bool {
+func IsSorted[T gconstraints.Ordered](x []T) bool {
 	for i := len(x) - 1; i > 0; i-- {
 		if x[i] < x[i-1] {
 			return false
@@ -166,7 +166,7 @@ func IsSorted[T constraints.Ordered](x []T) bool {
 
 // IsSortedFunc reports whether x is sorted in ascending order, with less as the
 // comparison function
-func IsSortedFunc[T any](x []T, less constraints.Less[T]) bool {
+func IsSortedFunc[T any](x []T, less gconstraints.Less[T]) bool {
 	for i := len(x) - 1; i > 0; i-- {
 		if less(x[i], x[i-1]) {
 			return false

@@ -1,6 +1,6 @@
-// Package constraints `golang.org/x/exp/constraints` is experimental and unreliable,
+// Package gconstraints `golang.org/x/exp/gconstraints` is experimental and unreliable,
 // so remove it from the import path
-package constraints
+package gconstraints
 
 // Signed is a constraint that permits any signed integer type.
 // If future releases of Go add new predeclared signed integer types,

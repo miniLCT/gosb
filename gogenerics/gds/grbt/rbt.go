@@ -6,7 +6,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/miniLCT/gosb/gogenerics/constraints"
+	gconstraints "github.com/miniLCT/gosb/gogenerics/gconstraints"
 )
 
 const (
@@ -51,17 +51,17 @@ func (node rbNode[K, V]) String() string {
 // RbTree implementation of a red black tree in which each node has a key and associate value.
 
 type RbTree[K comparable, V any] struct {
-	root     *rbNode[K, V]       // The root of the tree.
-	sentinel *rbNode[K, V]       // The sentinel node.
-	len      int                 // Number of nodes in the tree.
-	less     constraints.Less[K] // The comparison for ordering keys.
+	root     *rbNode[K, V]        // The root of the tree.
+	sentinel *rbNode[K, V]        // The sentinel node.
+	len      int                  // Number of nodes in the tree.
+	less     gconstraints.Less[K] // The comparison for ordering keys.
 }
 
 // New creates a RbTree. Keys are compared using the less function which should satisfy.
 // k1 < k2 => less(k1, k2) = true and less(k2,k1) = false.
 // k1 = k2 => less(k1,k2) = false and less(k2,k1) = false.
 // k1 > k2 -> less(k1,k2) = false and less(k2,k1) = true.
-func New[K comparable, V any](less constraints.Less[K]) *RbTree[K, V] {
+func New[K comparable, V any](less gconstraints.Less[K]) *RbTree[K, V] {
 	sentinel := rbNode[K, V]{parent: nil, left: nil, right: nil, color: black}
 	return &RbTree[K, V]{
 		root:     &sentinel,
@@ -78,7 +78,7 @@ func (tree *RbTree[K, V]) Insert(key K, value V) V {
 	if ok {
 		tree.insertFix(node)
 		tree.len++
-		return constraints.Empty[V]()
+		return gconstraints.Empty[V]()
 	}
 	return stored
 }
@@ -337,7 +337,7 @@ func (tree *RbTree[K, V]) Search(key K) bool {
 func (tree *RbTree[K, V]) Get(key K) V {
 	node := tree.search(key)
 	if node == tree.sentinel {
-		return constraints.Empty[V]()
+		return gconstraints.Empty[V]()
 	}
 	return node.value
 }
@@ -371,7 +371,7 @@ func (tree *RbTree[K, V]) GetIf(f func(K) bool) []V {
 func (tree *RbTree[K, V]) Delete(key K) V {
 	node := tree.search(key)
 	if node == tree.sentinel {
-		return constraints.Empty[V]()
+		return gconstraints.Empty[V]()
 	}
 	tree.delete(node)
 	tree.len = int(math.Max(0, float64(tree.len-1)))
@@ -500,14 +500,14 @@ func (tree *RbTree[K, V]) Values() []V {
 }
 
 // nodes collects the nodes of the tree using an in order traversal. For internal use to support Nodes function.
-func (tree *RbTree[K, V]) nodes(node *rbNode[K, V], nodes []constraints.Pair[K, V], index *int) {
+func (tree *RbTree[K, V]) nodes(node *rbNode[K, V], nodes []gconstraints.Pair[K, V], index *int) {
 	if node == tree.sentinel {
 		return
 	}
 	if node.left != tree.sentinel {
 		tree.nodes(node.left, nodes, index)
 	}
-	nodes[*index] = constraints.Pack(node.key, node.value)
+	nodes[*index] = gconstraints.Pack(node.key, node.value)
 	*index++
 	if node.right != tree.sentinel {
 		tree.nodes(node.right, nodes, index)
@@ -515,8 +515,8 @@ func (tree *RbTree[K, V]) nodes(node *rbNode[K, V], nodes []constraints.Pair[K, 
 }
 
 // Nodes returns the nodes of the tree using an in order traversal.
-func (tree *RbTree[K, V]) Nodes() []constraints.Pair[K, V] {
-	nodes := make([]constraints.Pair[K, V], tree.len)
+func (tree *RbTree[K, V]) Nodes() []gconstraints.Pair[K, V] {
+	nodes := make([]gconstraints.Pair[K, V], tree.len)
 	index := 0
 	tree.nodes(tree.root, nodes, &index)
 	return nodes

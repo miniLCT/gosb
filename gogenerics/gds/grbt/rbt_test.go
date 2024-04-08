@@ -3,9 +3,8 @@ package rbt
 import (
 	"testing"
 
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/miniLCT/gosb/gogenerics/constraints"
 )
 
 func TestNew(t *testing.T) {
@@ -394,7 +393,7 @@ func TestUpdate(t *testing.T) {
 			input:    New[int, string](lessThan),
 			key:      0,
 			value:    "RR",
-			expected: constraints.Empty[string](),
+			expected: gconstraints.Empty[string](),
 		},
 		{
 			input:    defaultTree(),
@@ -406,7 +405,7 @@ func TestUpdate(t *testing.T) {
 			input:    defaultTree(),
 			key:      -1,
 			value:    "AB",
-			expected: constraints.Empty[string](),
+			expected: gconstraints.Empty[string](),
 		},
 	}
 
@@ -417,7 +416,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestKeys(t *testing.T) {
-	var less constraints.Less[int]
+	var less gconstraints.Less[int]
 	less = func(i1, i2 int) bool { return i1 < i2 }
 
 	type keysTest struct {
@@ -476,7 +475,7 @@ func TestKeys(t *testing.T) {
 }
 
 func TestValues(t *testing.T) {
-	var less constraints.Less[int]
+	var less gconstraints.Less[int]
 	less = func(i1, i2 int) bool { return i1 < i2 }
 
 	type valuesTest struct {
@@ -535,14 +534,14 @@ func TestValues(t *testing.T) {
 }
 
 func TestNodes(t *testing.T) {
-	var less constraints.Less[int]
+	var less gconstraints.Less[int]
 	less = func(i1, i2 int) bool {
 		return i1 < i2
 	}
 
 	type valuesTest struct {
 		input    func() *RbTree[int, int]
-		expected []constraints.Pair[int, int]
+		expected []gconstraints.Pair[int, int]
 	}
 
 	valuesTests := []valuesTest{
@@ -551,7 +550,7 @@ func TestNodes(t *testing.T) {
 				tree := New[int, int](less)
 				return tree
 			},
-			expected: []constraints.Pair[int, int]{},
+			expected: []gconstraints.Pair[int, int]{},
 		},
 		{
 			input: func() *RbTree[int, int] {
@@ -561,10 +560,10 @@ func TestNodes(t *testing.T) {
 				tree.Insert(3, 3)
 				return tree
 			},
-			expected: []constraints.Pair[int, int]{
-				constraints.Pack(1, 1),
-				constraints.Pack(2, 2),
-				constraints.Pack(3, 3),
+			expected: []gconstraints.Pair[int, int]{
+				gconstraints.Pack(1, 1),
+				gconstraints.Pack(2, 2),
+				gconstraints.Pack(3, 3),
 			},
 		},
 		{
@@ -576,11 +575,11 @@ func TestNodes(t *testing.T) {
 				tree.Insert(5, 22)
 				return tree
 			},
-			expected: []constraints.Pair[int, int]{
-				constraints.Pack(1, 1),
-				constraints.Pack(2, 2),
-				constraints.Pack(3, 3),
-				constraints.Pack(5, 22),
+			expected: []gconstraints.Pair[int, int]{
+				gconstraints.Pack(1, 1),
+				gconstraints.Pack(2, 2),
+				gconstraints.Pack(3, 3),
+				gconstraints.Pack(5, 22),
 			},
 		},
 	}
@@ -591,7 +590,7 @@ func TestNodes(t *testing.T) {
 }
 
 func TestGetIf(t *testing.T) {
-	var less constraints.Less[int]
+	var less gconstraints.Less[int]
 	less = func(i1, i2 int) bool { return i1 < i2 }
 
 	type valuesTest struct {

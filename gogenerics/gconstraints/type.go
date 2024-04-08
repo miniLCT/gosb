@@ -1,4 +1,4 @@
-package constraints
+package gconstraints
 
 // Empty returns an empty value of the given type
 func Empty[T any]() T {

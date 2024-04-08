@@ -6,7 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/miniLCT/gosb/gogenerics/constraints"
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 )
 
 const (
@@ -169,7 +169,7 @@ func mapReduceWithPanicChan[T, U, V any](source <-chan T, panicChan *onceChan, m
 	writer := newGuardedWriter(options.ctx, output, done)
 	var closeOnce sync.Once
 	// use atomic type to avoid data race
-	var retErr constraints.AtomicError
+	var retErr gconstraints.AtomicError
 	finish := func() {
 		closeOnce.Do(func() {
 			close(done)

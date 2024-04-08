@@ -2,12 +2,11 @@ package gmap
 
 import (
 	"fmt"
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/miniLCT/gosb/gogenerics/constraints"
 )
 
 func TestKeys(t *testing.T) {
@@ -101,7 +100,7 @@ func TestMap2Entries(t *testing.T) {
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].Key < entries[j].Key
 	})
-	stdEntries := []constraints.Entry[int64, any]{
+	stdEntries := []gconstraints.Entry[int64, any]{
 		{Key: -1, Value: "-1"},
 		{Key: 0, Value: 0},
 		{Key: 1, Value: true},
@@ -115,7 +114,7 @@ func TestMap2Entries(t *testing.T) {
 func TestEntries2Map(t *testing.T) {
 	assert := assert.New(t)
 
-	entries := []constraints.Entry[int64, any]{
+	entries := []gconstraints.Entry[int64, any]{
 		{Key: -1, Value: "-1"},
 		{Key: 0, Value: 0},
 		{Key: 1, Value: true},

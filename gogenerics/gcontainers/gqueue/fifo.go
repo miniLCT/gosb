@@ -1,7 +1,7 @@
 package gqueue
 
 import (
-	"github.com/miniLCT/gosb/gogenerics/constraints"
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"github.com/miniLCT/gosb/gogenerics/gcontainers/glist"
 )
 
@@ -35,7 +35,7 @@ func Push[T any](q *Queue[T], v T) error {
 // Pop removes an element from the head of the queue
 func Pop[T any](q *Queue[T]) (T, error) {
 	if IsEmpty(q) {
-		return constraints.Empty[T](), ErrorEmptyQueue
+		return gconstraints.Empty[T](), ErrorEmptyQueue
 	}
 	val := q.list.Front.Value
 	glist.Remove(q.list, q.list.Front)
@@ -47,7 +47,7 @@ func Pop[T any](q *Queue[T]) (T, error) {
 func Peek[T any](q *Queue[T]) (T, error) {
 	if IsEmpty(q) {
 		// todo:return panic or error?
-		return constraints.Empty[T](), ErrorEmptyQueue
+		return gconstraints.Empty[T](), ErrorEmptyQueue
 	}
 	return q.list.Front.Value, nil
 }
