@@ -3,8 +3,9 @@ package rbt
 import (
 	"testing"
 
-	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 )
 
 func TestNew(t *testing.T) {

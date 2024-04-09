@@ -2,9 +2,9 @@ package gskiplist
 
 import (
 	"fmt"
-	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"math/bits"
 
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"github.com/miniLCT/gosb/hack/fastrand"
 )
 

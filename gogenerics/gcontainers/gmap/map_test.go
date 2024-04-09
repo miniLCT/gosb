@@ -2,11 +2,12 @@ package gmap
 
 import (
 	"fmt"
-	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 )
 
 func TestKeys(t *testing.T) {
