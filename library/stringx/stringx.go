@@ -17,7 +17,7 @@ func Indent(text, prefix string) string {
 		return text
 	}
 	has := strings.HasSuffix(text, "\n")
-	text = prefix + strings.Replace(text, "\n", "\n"+prefix, -1)
+	text = prefix + strings.ReplaceAll(text, "\n", "\n"+prefix)
 	if has {
 		return text[:len(text)-len(prefix)]
 	}
@@ -25,6 +25,7 @@ func Indent(text, prefix string) string {
 }
 
 // SnakeString converts the accepted string to a snake string (XxYy to xx_yy)
+// Notice maybe this implementation is controversial
 func SnakeString(s string) string {
 	data := make([]byte, 0, len(s)*2)
 	j := false
@@ -50,10 +51,10 @@ func CamelString(s string) string {
 	num := len(s) - 1
 	for i := 0; i <= num; i++ {
 		d := s[i]
-		if k == false && d >= 'A' && d <= 'Z' {
+		if !k && d >= 'A' && d <= 'Z' {
 			k = true
 		}
-		if d >= 'a' && d <= 'z' && (j || k == false) {
+		if d >= 'a' && d <= 'z' && (j || !k) {
 			d = d - 32
 			j = false
 			k = true
@@ -143,6 +144,7 @@ func toInitialisms(runes []rune) []rune {
 // commonInitialisms is a set of common initialisms.
 // Only add entries that are highly unlikely to be non-initialisms.
 // For instance, "ID" is fine (Freudian code is rare), but "AND" is not.
+
 var commonInitialisms = map[string]bool{
 	"ACL":   true,
 	"API":   true,

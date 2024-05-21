@@ -13,21 +13,21 @@ func TestCheckPassword(t *testing.T) {
 		maxLen   int
 		expected bool
 	}{
-		{"TooShortWithUpperCase", "A", N | LorU, 2, 0, false},
-		{"TooShortWithLowerCase", "a", N | LorU, 2, 0, false},
-		{"TooShortWithNumber", "1", N | LorU, 2, 0, false},
-		{"NoNumber", "Aa", N | LorU, 2, 0, false},
-		{"ValidWithUpperAndNumber", "A1", N | LorU, 2, 0, true},
-		{"ValidWithLowerAndNumber", "a1", N | LorU, 2, 0, true},
-		{"ValidWithAllConditions", "Aa1", N | LorU, 2, 0, true},
-		{"ValidWithUpperAndLower", "AaBbCcDd", L | U, 6, 0, true},
-		{"ValidWithUpperAndNumber", "ABCD1234", N | U, 6, 0, true},
-		{"ValidWithUpperAndNumberOrLetter", "ABCD1234", N | LorU | U, 6, 0, true},
-		{"MissingLower", "ABCD1234", N | LorU | L, 6, 0, false},
-		{"ExceedsMaxLen", "abcd1234", N | L, 6, 7, false},
-		{"ValidWithinRange", "Aa123456", N | LorU, 6, 8, true},
-		{"ValidWithSpecialChars", "Aa@123456", Flag(1<<6) | N | L | U | S, 6, 16, true},
-		{"ContainsNonASCII", "Aa123456语言", N | L | U, 6, 0, false},
+		{name: "TooShortWithUpperCase", password: "A", flags: N | LorU, minLen: 2, maxLen: 0, expected: false},
+		{name: "TooShortWithLowerCase", password: "a", flags: N | LorU, minLen: 2, maxLen: 0, expected: false},
+		{name: "TooShortWithNumber", password: "1", flags: N | LorU, minLen: 2, maxLen: 0, expected: false},
+		{name: "NoNumber", password: "Aa", flags: N | LorU, minLen: 2, maxLen: 0, expected: false},
+		{name: "ValidWithUpperAndNumber", password: "A1", flags: N | LorU, minLen: 2, maxLen: 0, expected: true},
+		{name: "ValidWithLowerAndNumber", password: "a1", flags: N | LorU, minLen: 2, maxLen: 0, expected: true},
+		{name: "ValidWithAllConditions", password: "Aa1", flags: N | LorU, minLen: 2, maxLen: 0, expected: true},
+		{name: "ValidWithUpperAndLower", password: "AaBbCcDd", flags: L | U, minLen: 6, maxLen: 0, expected: true},
+		{name: "ValidWithUpperAndNumber", password: "ABCD1234", flags: N | U, minLen: 6, maxLen: 0, expected: true},
+		{name: "ValidWithUpperAndNumberOrLetter", password: "ABCD1234", flags: N | LorU | U, minLen: 6, maxLen: 0, expected: true},
+		{name: "MissingLower", password: "ABCD1234", flags: N | LorU | L, minLen: 6, maxLen: 0, expected: false},
+		{name: "ExceedsMaxLen", password: "abcd1234", flags: N | L, minLen: 6, maxLen: 7, expected: false},
+		{name: "ValidWithinRange", password: "Aa123456", flags: N | LorU, minLen: 6, maxLen: 8, expected: true},
+		{name: "ValidWithSpecialChars", password: "Aa@123456", flags: Flag(1<<6) | N | L | U | S, minLen: 6, maxLen: 16, expected: true},
+		{name: "ContainsNonASCII", password: "Aa123456语言", flags: N | L | U, minLen: 6, maxLen: 0, expected: false},
 	}
 
 	for _, tc := range testCases {

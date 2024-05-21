@@ -56,33 +56,33 @@ func Fnv1aToUint32(b []byte) uint32 {
 }
 
 // AESEncrypt uses ECB mode to encrypt a piece of data and then encodes it in hex.
-// The cipherkey argument should be the AES key,
+// The cipherKey argument should be the AES key,
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
-func AESEncrypt(cipherkey, plaintext []byte, useBase64 ...bool) []byte {
-	block := mustNewCipher(cipherkey)
+func AESEncrypt(cipherKey, plainText []byte, useBase64 ...bool) []byte {
+	block := mustNewCipher(cipherKey)
 	blockSize := block.BlockSize()
-	plaintext = pkcs5Padding(plaintext, blockSize)
-	r := make([]byte, len(plaintext))
+	plainText = pkcs5Padding(plainText, blockSize)
+	r := make([]byte, len(plainText))
 	dst := r
-	for len(plaintext) > 0 {
-		block.Encrypt(dst, plaintext)
-		plaintext = plaintext[blockSize:]
+	for len(plainText) > 0 {
+		block.Encrypt(dst, plainText)
+		plainText = plainText[blockSize:]
 		dst = dst[blockSize:]
 	}
 	return encode(r, useBase64)
 }
 
 // AESDecrypt hex decodes a piece of data and then decrypts it using ECB mode.
-// The cipherkey argument should be the AES key,
+// The cipherKey argument should be the AES key,
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
-func AESDecrypt(cipherkey, ciphertext []byte, useBase64 ...bool) ([]byte, error) {
+func AESDecrypt(cipherKey, ciphertext []byte, useBase64 ...bool) ([]byte, error) {
 	src, err := decode(ciphertext, useBase64)
 	if err != nil {
 		return nil, err
 	}
-	block, err := aes.NewCipher(cipherkey)
+	block, err := aes.NewCipher(cipherKey)
 	if err != nil {
 		return nil, err
 	}
@@ -98,30 +98,30 @@ func AESDecrypt(cipherkey, ciphertext []byte, useBase64 ...bool) ([]byte, error)
 }
 
 // AESCBCEncrypt uses CBC mode to encrypt a piece of data and then encodes it in hex.
-// The cipherkey argument should be the AES key,
+// The cipherKey argument should be the AES key,
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
-func AESCBCEncrypt(cipherkey, plaintext []byte, useBase64 ...bool) []byte {
-	block := mustNewCipher(cipherkey)
+func AESCBCEncrypt(cipherKey, plainText []byte, useBase64 ...bool) []byte {
+	block := mustNewCipher(cipherKey)
 	blockSize := block.BlockSize()
-	plaintext = pkcs5Padding(plaintext, blockSize)
-	// The IV needs to be unique, but not secure. Therefore it's common to
+	plainText = pkcs5Padding(plainText, blockSize)
+	// The IV needs to be unique, but not secure. Therefore, it's common to
 	// include it at the beginning of the ciphertext.
-	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	ciphertext := make([]byte, aes.BlockSize+len(plainText))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		panic(err)
 	}
 	mode := cipher.NewCBCEncrypter(block, iv)
-	mode.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+	mode.CryptBlocks(ciphertext[aes.BlockSize:], plainText)
 	return encode(ciphertext, useBase64)
 }
 
 // AESCBCDecrypt hex decodes a piece of data and then decrypts it using CBC mode.
-// The cipherkey argument should be the AES key,
+// The cipherKey argument should be the AES key,
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
-func AESCBCDecrypt(cipherkey, ciphertext []byte, useBase64 ...bool) ([]byte, error) {
+func AESCBCDecrypt(cipherKey, ciphertext []byte, useBase64 ...bool) ([]byte, error) {
 	ciphertext, err := decode(ciphertext, useBase64)
 	if err != nil {
 		return nil, err
@@ -137,40 +137,40 @@ func AESCBCDecrypt(cipherkey, ciphertext []byte, useBase64 ...bool) ([]byte, err
 	if len(ciphertext)%aes.BlockSize != 0 {
 		return nil, errors.New("ciphertext is not a multiple of the block size")
 	}
-	block, err := aes.NewCipher(cipherkey)
+	block, err := aes.NewCipher(cipherKey)
 	if err != nil {
 		return nil, err
 	}
 	mode := cipher.NewCBCDecrypter(block, iv)
 	// CryptBlocks can work in-place if the two arguments are the same.
-	plaintext := ciphertext
-	mode.CryptBlocks(plaintext, ciphertext)
-	return pkcs5Unpadding(plaintext)
+	plainText := ciphertext
+	mode.CryptBlocks(plainText, ciphertext)
+	return pkcs5Unpadding(plainText)
 }
 
 // AESCTREncrypt uses CTR mode to encrypt a piece of data and then encodes it in hex.
-// The cipherkey argument should be the AES key,
+// The cipherKey argument should be the AES key,
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
-func AESCTREncrypt(cipherkey, plaintext []byte, useBase64 ...bool) []byte {
-	block := mustNewCipher(cipherkey)
+func AESCTREncrypt(cipherKey, plainText []byte, useBase64 ...bool) []byte {
+	block := mustNewCipher(cipherKey)
 	// The IV needs to be unique, but not secure. Therefore it's common to
 	// include it at the beginning of the ciphertext.
-	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	ciphertext := make([]byte, aes.BlockSize+len(plainText))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		panic(err)
 	}
 	stream := cipher.NewCTR(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plainText)
 	return encode(ciphertext, useBase64)
 }
 
 // AESCTRDecrypt hex decodes a piece of data and then decrypts it using CTR mode.
-// The cipherkey argument should be the AES key,
+// The cipherKey argument should be the AES key,
 // either 16, 24, or 32 bytes to select
 // AES-128, AES-192, or AES-256.
-func AESCTRDecrypt(cipherkey, ciphertext []byte, useBase64 ...bool) ([]byte, error) {
+func AESCTRDecrypt(cipherKey, ciphertext []byte, useBase64 ...bool) ([]byte, error) {
 	ciphertext, err := decode(ciphertext, useBase64)
 	if err != nil {
 		return nil, err
@@ -182,31 +182,31 @@ func AESCTRDecrypt(cipherkey, ciphertext []byte, useBase64 ...bool) ([]byte, err
 	}
 	iv := ciphertext[:aes.BlockSize]
 	ciphertext = ciphertext[aes.BlockSize:]
-	block, err := aes.NewCipher(cipherkey)
+	block, err := aes.NewCipher(cipherKey)
 	if err != nil {
 		return nil, err
 	}
 	stream := cipher.NewCTR(block, iv)
-	plaintext := ciphertext
+	plainText := ciphertext
 	// XORKeyStream can work in-place if the two arguments are the same.
-	stream.XORKeyStream(plaintext, ciphertext)
-	return plaintext, nil
+	stream.XORKeyStream(plainText, ciphertext)
+	return plainText, nil
 }
 
-func mustNewCipher(cipherkey []byte) cipher.Block {
-	block, err := aes.NewCipher(cipherkey)
+func mustNewCipher(cipherKey []byte) cipher.Block {
+	block, err := aes.NewCipher(cipherKey)
 	if err != nil {
 		panic(err)
 	}
 	return block
 }
 
-func pkcs5Padding(plaintext []byte, blockSize int) []byte {
-	n := byte(blockSize - len(plaintext)%blockSize)
+func pkcs5Padding(plainText []byte, blockSize int) []byte {
+	n := byte(blockSize - len(plainText)%blockSize)
 	for i := byte(0); i < n; i++ {
-		plaintext = append(plaintext, n)
+		plainText = append(plainText, n)
 	}
-	return plaintext
+	return plainText
 }
 
 func pkcs5Unpadding(r []byte) ([]byte, error) {

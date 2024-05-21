@@ -6,12 +6,16 @@ type Flag uint8
 const (
 	// N denotes the numerals.
 	N Flag = 1 << 0
+
 	// LorU denotes the lowercase or uppercase letters.
 	LorU Flag = 1 << 1
+
 	// L denotes the lowercase letters.
 	L Flag = 1 << 2
+
 	// U denotes the uppercase letters.
 	U Flag = 1 << 3
+
 	// S denotes the printable symbols found on the keyboard, except letters, numerals and spaces.
 	S Flag = 1 << 4
 
