@@ -7,7 +7,7 @@ import (
 func TestPool(t *testing.T) {
 	type Foo struct{ n int }
 	n := 42
-	p := New(func() Foo { return Foo{n} })
+	p := New(func() Foo { return Foo{n: n} })
 	v1 := p.Get()
 
 	if got, want := v1.n, 42; got != want {

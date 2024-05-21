@@ -13,15 +13,15 @@ func TestFifo(t *testing.T) {
 	sli := []int{1, 2, 3}
 	fifo := Gen(sli)
 	assert.False(IsEmpty(fifo))
-	assert.Equal(3, Len(fifo))
+	assert.Equal(3, fifo.Len())
 
-	e, err := Pop(fifo)
+	e, err := fifo.Pop()
 	assert.Equal(1, e)
 	assert.Nil(err)
-	assert.Equal(2, Len(fifo))
+	assert.Equal(2, fifo.Len())
 
-	_ = Push(fifo, 4)
-	assert.Equal(3, Len(fifo))
+	_ = fifo.Push(4)
+	assert.Equal(3, fifo.Len())
 
 	e, err = Peek(fifo)
 	assert.Equal(2, e)
@@ -40,12 +40,12 @@ func TestFifo(t *testing.T) {
 	assert.Equal([]int{2, 3, 4}, ss)
 
 	Clear(fifo)
-	assert.Equal(0, Len(fifo))
+	assert.Equal(0, fifo.Len())
 	assert.True(IsEmpty(fifo))
 
 	emptyQueue := New[string]()
 	assert.True(IsEmpty(emptyQueue))
-	e2, err := Pop(emptyQueue)
+	e2, err := emptyQueue.Pop()
 	assert.Equal("", e2)
 	assert.NotNil(err)
 	e2, err = Peek(emptyQueue)

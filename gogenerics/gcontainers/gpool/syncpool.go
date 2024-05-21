@@ -5,6 +5,7 @@ import (
 )
 
 // A Pool is a generic wrapper around a sync.Pool.
+
 type Pool[T any] struct {
 	pool sync.Pool
 }
@@ -14,7 +15,7 @@ type Pool[T any] struct {
 // The equivalent sync.Pool construct is "sync.Pool{New: fn}"
 func New[T any](fn func() T) Pool[T] {
 	return Pool[T]{
-		pool: sync.Pool{New: func() interface{} { return fn() }},
+		pool: sync.Pool{New: func() any { return fn() }},
 	}
 }
 
@@ -38,7 +39,7 @@ type ArrayPool[T any] struct {
 func NewArrayPool[T any](size uint) ArrayPool[T] {
 	return ArrayPool[T]{
 		pool: sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return make([]T, 0, size)
 			},
 		},

@@ -21,24 +21,24 @@ func New[T any]() *Queue[T] {
 }
 
 // Len returns the number of items currently in the queue
-func Len[T any](q *Queue[T]) int {
+func (q *Queue[T]) Len() int {
 	return q.length
 }
 
 // Push adds an element to the tail of the queue, reserves the return type for future extension
-func Push[T any](q *Queue[T], v T) error {
-	glist.PushBack(q.list, v)
+func (q *Queue[T]) Push(v T) error {
+	q.list.PushBack(v)
 	q.length++
 	return nil
 }
 
 // Pop removes an element from the head of the queue
-func Pop[T any](q *Queue[T]) (T, error) {
+func (q *Queue[T]) Pop() (T, error) {
 	if IsEmpty(q) {
 		return gconstraints.Empty[T](), ErrorEmptyQueue
 	}
-	val := q.list.Front.Value
-	glist.Remove(q.list, q.list.Front)
+	val := q.list.Front().Value
+	q.list.Remove(q.list.Front())
 	q.length--
 	return val, nil
 }
@@ -49,15 +49,15 @@ func Peek[T any](q *Queue[T]) (T, error) {
 		// todo:return panic or error?
 		return gconstraints.Empty[T](), ErrorEmptyQueue
 	}
-	return q.list.Front.Value, nil
+	return q.list.Front().Value, nil
 }
 
 // PeekAll returns all elements in the queue without removing them
 func PeekAll[T any](q *Queue[T]) []T {
 	res := make([]T, q.length)
 	var idx int
-	glist.Range(q.list.Front, func(v T) {
-		res[idx] = v
+	q.list.Range(func(e *glist.Element[T]) {
+		res[idx] = e.Value
 		idx++
 	})
 	return res
@@ -79,7 +79,7 @@ func Iterator[T any](q *Queue[T]) <-chan T {
 	ch := make(chan T, q.length)
 	defer close(ch)
 	for {
-		val, err := Pop(q)
+		val, err := q.Pop()
 		if err != nil {
 			break
 		}
@@ -91,7 +91,7 @@ func Iterator[T any](q *Queue[T]) <-chan T {
 func Gen[T any, S ~[]T](s S) *Queue[T] {
 	q := New[T]()
 	for _, v := range s {
-		_ = Push(q, v)
+		_ = q.Push(v)
 	}
 	return q
 }
