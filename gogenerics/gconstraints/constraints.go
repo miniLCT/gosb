@@ -2,6 +2,8 @@
 // so remove it from the import path
 package gconstraints
 
+import "cmp"
+
 // Signed is a constraint that permits any signed integer type.
 // If future releases of Go add new predeclared signed integer types,
 // this constraint will be modified to include them.
@@ -41,6 +43,7 @@ type Complex interface {
 // that supports the operators < <= >= >.
 // If future releases of Go add new ordered types,
 // this constraint will be modified to include them.
-type Ordered interface {
-	Integer | Float | ~string
-}
+//
+// It is an alias of cmp.Ordered, so it stays in sync with the standard library
+// and can be used with the built-in min/max functions and the slices package.
+type Ordered = cmp.Ordered

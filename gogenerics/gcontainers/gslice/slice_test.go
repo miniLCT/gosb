@@ -1,8 +1,9 @@
 package gslice
 
 import (
+	"cmp"
 	"math"
-	"sort"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -235,12 +236,8 @@ func TestIsSorted(t *testing.T) {
 	assert.False(IsSorted(ints[:]))
 	assert.False(IsSorted(float64s[:]))
 
-	sort.Slice(ints[:], func(i, j int) bool {
-		return ints[i] < ints[j]
-	})
-	sort.Slice(float64s[:], func(i, j int) bool {
-		return float64s[i] < float64s[j]
-	})
+	slices.Sort(ints[:])
+	slices.Sort(float64s[:])
 	t.Logf("after sort: %v", ints)
 	t.Logf("after sort: %v", float64s)
 	assert.True(IsSorted(ints[:]))
@@ -260,8 +257,8 @@ func TestIsSortedWithFunc(t *testing.T) {
 		return a > b
 	}))
 
-	sort.Slice(ints, func(i, j int) bool {
-		return ints[i] > ints[j]
+	slices.SortFunc(ints, func(a, b int) int {
+		return cmp.Compare(b, a)
 	})
 	assert.False(IsSortedFunc(ints, func(a, b int) bool {
 		return a < b

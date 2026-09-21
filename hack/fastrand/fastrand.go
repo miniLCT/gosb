@@ -134,7 +134,8 @@ func (r *wyrand) Uint64n(n uint64) uint64 {
 }
 
 func (r *wyrand) Uint32() uint32 {
-	return uint32(Uint64())
+	// use the receiver, not the package level Uint64
+	return uint32(r.Uint64())
 }
 
 func (r *wyrand) Uint32n(n int) uint32 {
@@ -156,7 +157,9 @@ func Read(p []byte) (int, error) {
 
 	if l >= 8 {
 		var i int
-		uint64p := *(*[]uint64)(unsafe.Pointer(&p))
+		// unsafe.Slice + unsafe.SliceData replace the old "cast the slice
+		// header" trick (go1.20).
+		uint64p := unsafe.Slice((*uint64)(unsafe.Pointer(unsafe.SliceData(p))), len(p)/8)
 		for l >= 8 {
 			uint64p[i] = r.Uint64()
 			i++
@@ -196,6 +199,14 @@ func Shuffle(n int, swap func(i, j int)) {
 		j := int(Int31n(int32(i + 1)))
 		swap(i, j)
 	}
+}
+
+// ShuffleSlice pseudo-randomizes the order of the elements of s in place.
+// It is the generic counterpart of Shuffle.
+func ShuffleSlice[T any](s []T) {
+	Shuffle(len(s), func(i, j int) {
+		s[i], s[j] = s[j], s[i]
+	})
 }
 
 // Perm returns, as a slice of n ints, a pseudo-random permutation of the integers

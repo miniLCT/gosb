@@ -1,15 +1,17 @@
 package bitset
 
 import (
-	"bytes"
 	"encoding/hex"
 	"errors"
-	"fmt"
+	"iter"
 	"math/bits"
+	"strings"
 	"sync"
-
-	"github.com/miniLCT/gosb/hack/unsafex"
 )
+
+// ErrOffsetOutOfRange is returned when the given bit offset is out of the left range.
+// Use errors.Is to check for it.
+var ErrOffsetOutOfRange = errors.New("the bit offset is out of the left range")
 
 // BitSet bit set
 
@@ -49,7 +51,7 @@ func (b *BitSet) Set(offset int, value bool) (bool, error) {
 		offset += size
 	}
 	if offset < 0 {
-		return false, errors.New("the bit offset is out of the left range")
+		return false, ErrOffsetOutOfRange
 	}
 
 	// the bit group index
@@ -111,6 +113,21 @@ func (b *BitSet) Range(f func(offset int, truth bool) bool) {
 		if !f(offset, getBit(b.set[offset/8], byte(offset%8)) == 1) {
 			return
 		}
+	}
+}
+
+// All returns an iterator over the offset-value pairs of the bit set, in
+// ascending offset order. It is the range-over-func counterpart of Range:
+//
+//	for offset, truth := range b.All() {
+//		// ...
+//	}
+//
+// The read lock is held for the whole iteration, so callbacks must not call
+// other methods of b.
+func (b *BitSet) All() iter.Seq2[int, bool] {
+	return func(yield func(int, bool) bool) {
+		b.Range(yield)
 	}
 }
 
@@ -280,9 +297,7 @@ func (b *BitSet) op(op string, bitSets []*BitSet) *BitSet {
 // Clear clears the bit set.
 func (b *BitSet) Clear() {
 	b.mu.Lock()
-	for i := range b.set {
-		b.set[i] = 0
-	}
+	clear(b.set)
 	b.mu.Unlock()
 }
 
@@ -321,11 +336,26 @@ func (b *BitSet) Binary(sep string) string {
 	if len(b.set) == 0 {
 		return ""
 	}
-	var buf bytes.Buffer
-	for _, i := range b.set {
-		buf.WriteString(fmt.Sprintf("%s%08b", sep, i))
+	var sb strings.Builder
+	sb.Grow(len(b.set) * (8 + len(sep)))
+	for i, v := range b.set {
+		if i > 0 {
+			sb.WriteString(sep)
+		}
+		writeBinary(&sb, v)
 	}
-	return unsafex.SliceToString(bytes.TrimPrefix(buf.Bytes(), unsafex.StringToSlice(sep)))
+	return sb.String()
+}
+
+// writeBinary writes v to sb as 8 binary digits, most significant bit first.
+func writeBinary(sb *strings.Builder, v byte) {
+	for shift := 7; shift >= 0; shift-- {
+		if v&(1<<uint(shift)) != 0 {
+			sb.WriteByte('1')
+		} else {
+			sb.WriteByte('0')
+		}
+	}
 }
 
 // String returns the bit set by hex type.

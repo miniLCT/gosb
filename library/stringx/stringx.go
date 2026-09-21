@@ -2,6 +2,7 @@ package stringx
 
 import (
 	"bytes"
+	"iter"
 	"regexp"
 	"strconv"
 	"strings"
@@ -27,25 +28,29 @@ func Indent(text, prefix string) string {
 // SnakeString converts the accepted string to a snake string (XxYy to xx_yy)
 // Notice maybe this implementation is controversial
 func SnakeString(s string) string {
-	data := make([]byte, 0, len(s)*2)
+	var sb strings.Builder
+	sb.Grow(len(s) * 2)
 	j := false
-	for _, d := range unsafex.StringToSlice(s) {
+	// index the string byte-wise, so no conversion (and no unsafe) is needed.
+	for i := 0; i < len(s); i++ {
+		d := s[i]
 		if d >= 'A' && d <= 'Z' {
 			if j {
-				data = append(data, '_')
+				sb.WriteByte('_')
 				j = false
 			}
 		} else if d != '_' {
 			j = true
 		}
-		data = append(data, d)
+		sb.WriteByte(d)
 	}
-	return strings.ToLower(unsafex.SliceToString(data))
+	return strings.ToLower(sb.String())
 }
 
 // CamelString converts the accepted string to a camel string (xx_yy to XxYy)
 func CamelString(s string) string {
-	data := make([]byte, 0, len(s))
+	var sb strings.Builder
+	sb.Grow(len(s))
 	j := false
 	k := false
 	num := len(s) - 1
@@ -63,9 +68,9 @@ func CamelString(s string) string {
 			j = true
 			continue
 		}
-		data = append(data, d)
+		sb.WriteByte(d)
 	}
-	return unsafex.SliceToString(data[:])
+	return sb.String()
 }
 
 // LintCamelString converts the accepted string to a camel string (xx_id to XxID)
@@ -226,6 +231,25 @@ func CodePointToUTF8(str string, base int) string {
 		}
 	}
 	return strings.Join(strSlice, "")
+}
+
+// Lines returns an iterator over the lines of s.
+// The final line is yielded even when it is empty and the trailing newline is
+// stripped, see strings.Lines (go1.24).
+func Lines(s string) iter.Seq[string] {
+	return strings.Lines(s)
+}
+
+// SplitSeq returns an iterator over all the substrings of s separated by sep.
+// Unlike Split it does not allocate the intermediate slice (go1.24).
+func SplitSeq(s, sep string) iter.Seq[string] {
+	return strings.SplitSeq(s, sep)
+}
+
+// FieldsSeq returns an iterator over the substrings of s split around
+// whitespace runs, see strings.FieldsSeq (go1.24).
+func FieldsSeq(s string) iter.Seq[string] {
+	return strings.FieldsSeq(s)
 }
 
 var spaceReplacer = strings.NewReplacer(

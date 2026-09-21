@@ -1,6 +1,8 @@
 package gqueue
 
 import (
+	"iter"
+
 	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"github.com/miniLCT/gosb/gogenerics/gcontainers/glist"
 )
@@ -54,13 +56,39 @@ func Peek[T any](q *Queue[T]) (T, error) {
 
 // PeekAll returns all elements in the queue without removing them
 func PeekAll[T any](q *Queue[T]) []T {
-	res := make([]T, q.length)
-	var idx int
-	q.list.Range(func(e *glist.Element[T]) {
-		res[idx] = e.Value
-		idx++
-	})
+	res := make([]T, 0, q.length)
+	for v := range q.All() {
+		res = append(res, v)
+	}
 	return res
+}
+
+// All returns an iterator over the elements of the queue, from head to tail.
+// The queue is left untouched.
+func (q *Queue[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for e := q.list.Front(); e != nil; e = e.Next() {
+			if !yield(e.Value) {
+				return
+			}
+		}
+	}
+}
+
+// Drain returns an iterator over the elements of the queue, from head to tail.
+// Every yielded element is popped from the queue.
+func (q *Queue[T]) Drain() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for {
+			v, err := q.Pop()
+			if err != nil {
+				return
+			}
+			if !yield(v) {
+				return
+			}
+		}
+	}
 }
 
 // IsEmpty returns whether the queue is empty
@@ -74,17 +102,17 @@ func Clear[T any](q *Queue[T]) {
 	q.length = 0
 }
 
-// Iterator returns a channel that will be filled with the elements
+// Iterator returns a channel that will be filled with the elements.
+// The elements are popped from the queue while the channel is filled.
+//
+// Deprecated: use the All (non-destructive) or Drain (destructive) iterators,
+// they are allocation free and composable with the slices package.
 func Iterator[T any](q *Queue[T]) <-chan T {
 	ch := make(chan T, q.length)
-	defer close(ch)
-	for {
-		val, err := q.Pop()
-		if err != nil {
-			break
-		}
-		ch <- val
+	for v := range q.Drain() {
+		ch <- v
 	}
+	close(ch)
 	return ch
 }
 

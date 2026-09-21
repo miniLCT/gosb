@@ -5,7 +5,15 @@
 //	for e := l.Front(); e != nil; e = e.Next() {
 //		// do something with e.Value
 //	}
+//
+// or, with the go1.23 range-over-func form:
+//
+//	for e := range l.All() {
+//		// do something with e.Value
+//	}
 package glist
+
+import "iter"
 
 // Element is an element of a linked list.
 type Element[T any] struct {
@@ -57,6 +65,15 @@ func (l *List[T]) Init() *List[T] {
 
 // New returns an initialized list.
 func New[T any]() *List[T] { return new(List[T]).Init() }
+
+// NewFrom collects the values of seq into a new list.
+func NewFrom[T any](seq iter.Seq[T]) *List[T] {
+	l := New[T]()
+	for v := range seq {
+		l.PushBack(v)
+	}
+	return l
+}
 
 // Len returns the number of elements of list l.
 // The complexity is O(1).
@@ -128,7 +145,7 @@ func (l *List[T]) move(e, at *Element[T]) {
 // Remove removes e from l if e is an element of list l.
 // It returns the element value e.Value.
 // The element must not be nil.
-func (l *List[T]) Remove(e *Element[T]) any {
+func (l *List[T]) Remove(e *Element[T]) T {
 	if e.list == l {
 		// if e.list == l, l must have been initialized when e was inserted
 		// in l or l == nil (e is a zero Element) and l.remove will crash
@@ -231,8 +248,52 @@ func (l *List[T]) PushFrontList(other *List[T]) {
 	}
 }
 
+// Range calls f for every element of the list, in forward order.
 func (l *List[T]) Range(f func(e *Element[T])) {
-	for e := l.Front(); e != nil; e = e.Next() {
+	for e := range l.All() {
 		f(e)
 	}
+}
+
+// All returns an iterator over all the elements of the list, in forward order.
+func (l *List[T]) All() iter.Seq[*Element[T]] {
+	return func(yield func(*Element[T]) bool) {
+		for e := l.Front(); e != nil; e = e.Next() {
+			if !yield(e) {
+				return
+			}
+		}
+	}
+}
+
+// Backward returns an iterator over all the elements of the list, in reverse order.
+func (l *List[T]) Backward() iter.Seq[*Element[T]] {
+	return func(yield func(*Element[T]) bool) {
+		for e := l.Back(); e != nil; e = e.Prev() {
+			if !yield(e) {
+				return
+			}
+		}
+	}
+}
+
+// Values returns an iterator over the values stored in the list, in forward order.
+func (l *List[T]) Values() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for e := range l.All() {
+			if !yield(e.Value) {
+				return
+			}
+		}
+	}
+}
+
+// Transform applies f to every element of l and returns the results in a new
+// list. It uses the go1.27 generic methods.
+func (l *List[T]) Transform[U any](f func(T) U) *List[U] {
+	out := New[U]()
+	for v := range l.Values() {
+		out.PushBack(f(v))
+	}
+	return out
 }

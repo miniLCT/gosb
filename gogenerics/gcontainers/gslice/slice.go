@@ -1,78 +1,52 @@
+// Package gslice provides helpers for slices. Everything that has an equivalent
+// in the standard library (slices, iter) delegates to it, the rest
+// (Unique, Shuffle, ...) is implemented here.
 package gslice
 
 import (
+	"iter"
+	"slices"
+
 	"github.com/miniLCT/gosb/gogenerics/gconstraints"
 	"github.com/miniLCT/gosb/hack/fastrand"
 )
 
 // Copy returns a shallow copy of the given slice
 func Copy[T any](s []T) []T {
-	// Preserve nil in case it matters
-	if s == nil {
-		return nil
-	}
-	return append([]T{}, s...)
+	// slices.Clone preserves nil, just like the documented behaviour here.
+	return slices.Clone(s)
 }
 
 // Equal returns whether two slices are equal: the same length and all
 // elements equal. Note that size=0 and nil are considered equal; floating
 // point NaNs are not considered equal
 func Equal[T comparable](a, b []T) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
+	return slices.Equal(a, b)
 }
 
 // EqualWithFunc returns whether two slices are equal using a comparison function on each pair of elements
 func EqualWithFunc[T1, T2 any](a []T1, b []T2, eq func(T1, T2) bool) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i, v1 := range a {
-		v2 := b[i]
-		if !eq(v1, v2) {
-			return false
-		}
-	}
-	return true
+	return slices.EqualFunc(a, b, eq)
 }
 
 // Index returns the index of the first occurrence of target in s, or -1 if not present
 func Index[T comparable](s []T, target T) int {
-	for i := range s {
-		if s[i] == target {
-			return i
-		}
-	}
-	return -1
+	return slices.Index(s, target)
 }
 
 // IndexWithFunc returns the first index i satisfying eq(s[i]), or -1 if none do
 func IndexWithFunc[T any](s []T, eq func(T) bool) int {
-	for i := range s {
-		if eq(s[i]) {
-			return i
-		}
-	}
-	return -1
+	return slices.IndexFunc(s, eq)
 }
 
 // Contains returns whether target is present in s.
 func Contains[T comparable](s []T, target T) bool {
-	return Index(s, target) >= 0
+	return slices.Contains(s, target)
 }
 
 // ContainsWithFunc return whether at least one element e of s satisfies eq(e).
 func ContainsWithFunc[T any](s []T, eq func(T) bool) bool {
-	return IndexWithFunc(s, eq) >= 0
+	return slices.ContainsFunc(s, eq)
 }
 
 // Len returns the length of slice
@@ -126,14 +100,10 @@ func UniqueWithFunc[T any, U comparable](s []T, f func(T) U) ([]T, int) {
 	return uniqS[:idx], idx
 }
 
-// Reverse means the first becomes the last, the second becomes the second to last, and so on
+// Reverse means the first becomes the last, the second becomes the second to last, and so on.
+// The reversal happens in place and s is returned for convenience.
 func Reverse[T any](s []T) []T {
-	l := len(s)
-	mid := l >> 1
-
-	for i := 0; i < mid; i++ {
-		s[i], s[l-1-i] = s[l-1-i], s[i]
-	}
+	slices.Reverse(s)
 	return s
 }
 
@@ -142,37 +112,22 @@ func Reverse[T any](s []T) []T {
 // returns the empty slice. If either is nil, returns a copy of
 // the other.
 func Merge[T any](s1, s2 []T) []T {
-	if s1 == nil && s2 == nil {
+	merged := slices.Concat(s1, s2)
+	if merged == nil {
 		return []T{}
 	}
-	if s1 == nil {
-		return Copy(s2)
-	}
-	if s2 == nil {
-		return Copy(s1)
-	}
-	return append(s1, s2...)
+	return merged
 }
 
 // IsSorted reports whether x is sorted in ascending order
 func IsSorted[T gconstraints.Ordered](x []T) bool {
-	for i := len(x) - 1; i > 0; i-- {
-		if x[i] < x[i-1] {
-			return false
-		}
-	}
-	return true
+	return slices.IsSorted(x)
 }
 
 // IsSortedFunc reports whether x is sorted in ascending order, with less as the
 // comparison function
 func IsSortedFunc[T any](x []T, less gconstraints.Less[T]) bool {
-	for i := len(x) - 1; i > 0; i-- {
-		if less(x[i], x[i-1]) {
-			return false
-		}
-	}
-	return true
+	return slices.IsSortedFunc(x, lessToCmp(less))
 }
 
 // Shuffle returns an array of shuffled values. Uses the Fisher-Yates shuffle algorithm
@@ -181,4 +136,64 @@ func Shuffle[T any](collection []T) []T {
 		collection[i], collection[j] = collection[j], collection[i]
 	})
 	return collection
+}
+
+// Values returns an iterator over the elements of s.
+func Values[T any](s []T) iter.Seq[T] {
+	return slices.Values(s)
+}
+
+// All returns an iterator over index-value pairs of s.
+func All[T any](s []T) iter.Seq2[int, T] {
+	return slices.All(s)
+}
+
+// Backward returns an iterator over index-value pairs of s, in reverse order.
+func Backward[T any](s []T) iter.Seq2[int, T] {
+	return slices.Backward(s)
+}
+
+// Collect collects the values of seq into a new slice.
+func Collect[T any](seq iter.Seq[T]) []T {
+	return slices.Collect(seq)
+}
+
+// Sorted returns a copy of s sorted in ascending order, s itself is left untouched.
+func Sorted[T gconstraints.Ordered](s []T) []T {
+	return slices.Sorted(slices.Values(s))
+}
+
+// SortedFunc returns a copy of s sorted with the given three-way comparison
+// function, s itself is left untouched.
+func SortedFunc[T any](s []T, cmp func(a, b T) int) []T {
+	return slices.SortedFunc(slices.Values(s), cmp)
+}
+
+// Filter returns a new slice holding only the elements of s satisfying keep.
+func Filter[T any](s []T, keep func(T) bool) []T {
+	if len(s) == 0 {
+		return make([]T, 0)
+	}
+	res := make([]T, 0, len(s))
+	for _, v := range s {
+		if keep(v) {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
+// lessToCmp adapts a "a is less than b" predicate to the three-way comparison
+// function used by the slices package.
+func lessToCmp[T any](less gconstraints.Less[T]) func(a, b T) int {
+	return func(a, b T) int {
+		switch {
+		case less(a, b):
+			return -1
+		case less(b, a):
+			return 1
+		default:
+			return 0
+		}
+	}
 }

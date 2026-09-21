@@ -173,7 +173,7 @@ func (f *FileStore[K, V]) Delete(ctx context.Context, keys ...K) error {
 	for _, k := range keys {
 		fp := f.getFilePath(k)
 		err := os.Remove(fp)
-		if err == nil || os.IsNotExist(err) {
+		if err == nil || errors.Is(err, fs.ErrNotExist) {
 			continue
 		}
 		errs = append(errs, err)
@@ -239,7 +239,7 @@ func (f *FileStore[K, V]) Purge() error {
 	_ = filepath.WalkDir(f.Dir, func(path string, d fs.DirEntry, err error) error {
 		if strings.HasSuffix(path, cacheFileExt) {
 			e := os.Remove(path)
-			if e != nil && !os.IsNotExist(err) {
+			if e != nil && !errors.Is(e, fs.ErrNotExist) {
 				errTotal++
 				lastErr = e
 			}

@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"iter"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -486,6 +487,36 @@ func (m *Map[K, V]) Range(f func(key K, value V) bool) {
 			break
 		}
 	}
+}
+
+// All returns an iterator over the key-value pairs present in the map.
+// Iteration does not necessarily correspond to any consistent snapshot of the
+// Map's contents, see Range.
+func (m *Map[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		m.Range(yield)
+	}
+}
+
+// Clear deletes all the entries, resulting in an empty Map.
+func (m *Map[K, V]) Clear() {
+	read := m.loadReadOnly()
+	if len(read.m) == 0 && !read.amended {
+		// Avoid allocating a new readOnly when the map is already clear.
+		return
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	read = m.loadReadOnly()
+	if len(read.m) > 0 || read.amended {
+		m.read.Store(&readOnly[K, V]{})
+	}
+
+	clear(m.dirty)
+	m.dirty = nil
+	m.misses = 0
 }
 
 func (m *Map[K, V]) missLocked() {

@@ -1,6 +1,10 @@
 package gheap
 
-import "github.com/miniLCT/gosb/gogenerics/gconstraints"
+import (
+	"iter"
+
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
+)
 
 // Heap is the generics implementation of heap
 
@@ -23,6 +27,37 @@ func NewWithData[T any](data []T, less gconstraints.Less[T]) *Heap[T] {
 	h.data = data
 	heapSort(h.data, less)
 	return h
+}
+
+// Len returns the number of elements currently held by the heap.
+func (h *Heap[T]) Len() int {
+	return len(h.data)
+}
+
+// Empty reports whether the heap holds no element.
+func (h *Heap[T]) Empty() bool {
+	return len(h.data) == 0
+}
+
+// Peek returns the minimum element of the heap without removing it.
+// The second return value reports whether the heap was non-empty.
+func (h *Heap[T]) Peek() (T, bool) {
+	if len(h.data) == 0 {
+		return gconstraints.Empty[T](), false
+	}
+	return h.data[0], true
+}
+
+// All returns an iterator over the elements of the heap in ascending order.
+// The elements are popped one by one, so the heap is empty afterwards.
+func (h *Heap[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for !h.Empty() {
+			if !yield(Pop(h)) {
+				return
+			}
+		}
+	}
 }
 
 // siftDown implements the heap property on v[lo:hi].
@@ -84,6 +119,7 @@ func Push[T any](h *Heap[T], v T) {
 }
 
 // Pop removes the minimum element from the heap and returns it.
+// It panics if the heap is empty, use TryPop for a safe variant.
 func Pop[T any](h *Heap[T]) T {
 	x := &h.data
 	ret := (*x)[0]
@@ -93,4 +129,13 @@ func Pop[T any](h *Heap[T]) T {
 	}
 	h.data = (*x)
 	return ret
+}
+
+// TryPop removes the minimum element from the heap and returns it.
+// The second return value reports whether the heap was non-empty.
+func TryPop[T any](h *Heap[T]) (T, bool) {
+	if len(h.data) == 0 {
+		return gconstraints.Empty[T](), false
+	}
+	return Pop(h), true
 }

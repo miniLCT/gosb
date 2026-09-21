@@ -3,6 +3,7 @@ package cachex
 import (
 	"container/list"
 	"context"
+	"iter"
 	"sync"
 	"time"
 )
@@ -19,7 +20,7 @@ func NewLRUCacheV2[K comparable, V any](caption int, maxUsed int) *LRUCacheV2[K,
 	}
 	return &LRUCacheV2[K, V]{
 		lruList: list.New(),
-		lruMap:  make(map[any]*item2[V], caption),
+		lruMap:  make(map[K]*item2[V], caption),
 		maxUsed: maxUsed,
 		caption: caption,
 	}
@@ -34,7 +35,7 @@ var _ Cache[string, any] = (*LRUCacheV2[string, any])(nil)
 // The expiration time of the data does not affect the elimination strategy.
 
 type LRUCacheV2[K comparable, V any] struct {
-	lruMap  map[any]*item2[V]
+	lruMap  map[K]*item2[V]
 	lruList *list.List
 	mux     sync.Mutex
 	maxUsed int // Maximum usage count, value 0 means no limitation
@@ -136,8 +137,33 @@ func (lc *LRUCacheV2[K, V]) doSet(key K, value V, ttl time.Duration) {
 
 	for lc.lruList.Len() > lc.caption {
 		last := lc.lruList.Back()
-		delete(lc.lruMap, last.Value)
+		if key, ok := last.Value.(K); ok {
+			delete(lc.lruMap, key)
+		}
 		lc.lruList.Remove(last)
+	}
+}
+
+// All returns an iterator over the cached key-value pairs, ordered from the
+// most recently used to the least recently used one.
+func (lc *LRUCacheV2[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		lc.mux.Lock()
+		defer lc.mux.Unlock()
+
+		for el := lc.lruList.Front(); el != nil; el = el.Next() {
+			key, ok := el.Value.(K)
+			if !ok {
+				continue
+			}
+			item, ok := lc.lruMap[key]
+			if !ok {
+				continue
+			}
+			if !yield(key, item.val) {
+				return
+			}
+		}
 	}
 }
 

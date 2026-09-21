@@ -3,6 +3,7 @@ package cachex
 import (
 	"context"
 	"errors"
+	"iter"
 	"time"
 )
 
@@ -333,6 +334,31 @@ func (mr MGetResult[K, V]) RangeMiss(fn func(key K) bool) {
 		if !fn(mr.keys[idx]) {
 			return
 		}
+	}
+}
+
+// All returns an iterator over every key-value pair of the result, hit or not.
+func (mr MGetResult[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for idx := range mr.keys {
+			if !yield(mr.keys[idx], mr.values[idx]) {
+				return
+			}
+		}
+	}
+}
+
+// Hits returns an iterator over the key-value pairs hit by the cache.
+func (mr MGetResult[K, V]) Hits() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		mr.RangeHit(yield)
+	}
+}
+
+// Misses returns an iterator over the keys missed by the cache.
+func (mr MGetResult[K, V]) Misses() iter.Seq[K] {
+	return func(yield func(K) bool) {
+		mr.RangeMiss(yield)
 	}
 }
 

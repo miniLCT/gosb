@@ -3,7 +3,7 @@ package rbt
 import (
 	"errors"
 	"fmt"
-	"math"
+	"iter"
 	"strings"
 
 	gconstraints "github.com/miniLCT/gosb/gogenerics/gconstraints"
@@ -374,7 +374,7 @@ func (tree *RbTree[K, V]) Delete(key K) V {
 		return gconstraints.Empty[V]()
 	}
 	tree.delete(node)
-	tree.len = int(math.Max(0, float64(tree.len-1)))
+	tree.len = max(0, tree.len-1)
 	node.left = nil
 	node.right = nil
 	temp := node.value
@@ -543,6 +543,71 @@ func (tree *RbTree[K, V]) Keys() []K {
 	index := 0
 	tree.keys(tree.root, data, &index)
 	return data
+}
+
+// All returns an iterator over the key-value pairs of the tree in ascending
+// key order. The traversal is iterative, so deep trees cannot blow the stack.
+func (tree *RbTree[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		stack := make([]*rbNode[K, V], 0, tree.len)
+		node := tree.root
+		for node != tree.sentinel || len(stack) > 0 {
+			for node != tree.sentinel {
+				stack = append(stack, node)
+				node = node.left
+			}
+			node = stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			if !yield(node.key, node.value) {
+				return
+			}
+			node = node.right
+		}
+	}
+}
+
+// Backward returns an iterator over the key-value pairs of the tree in
+// descending key order.
+func (tree *RbTree[K, V]) Backward() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		stack := make([]*rbNode[K, V], 0, tree.len)
+		node := tree.root
+		for node != tree.sentinel || len(stack) > 0 {
+			for node != tree.sentinel {
+				stack = append(stack, node)
+				node = node.right
+			}
+			node = stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			if !yield(node.key, node.value) {
+				return
+			}
+			node = node.left
+		}
+	}
+}
+
+// Min returns the smallest key stored in the tree together with its value.
+// The third return value reports whether the tree was non-empty.
+func (tree *RbTree[K, V]) Min() (K, V, bool) {
+	if tree.Empty() {
+		return gconstraints.Empty[K](), gconstraints.Empty[V](), false
+	}
+	node := tree.minimum(tree.root)
+	return node.key, node.value, true
+}
+
+// Max returns the greatest key stored in the tree together with its value.
+// The third return value reports whether the tree was non-empty.
+func (tree *RbTree[K, V]) Max() (K, V, bool) {
+	if tree.Empty() {
+		return gconstraints.Empty[K](), gconstraints.Empty[V](), false
+	}
+	node := tree.root
+	for node.right != tree.sentinel {
+		node = node.right
+	}
+	return node.key, node.value, true
 }
 
 // Len returns the size of the tree.

@@ -1,25 +1,18 @@
-//go:build !go1.19
-// +build !go1.19
-
 package fastrand
 
 import (
 	_ "unsafe" // for go:linkname
 )
 
+// The functions below are bound to the per-M random source of the Go runtime,
+// they are much faster than math/rand because they need no locking and no
+// seed injection.
+
 //go:linkname runtimefastrand runtime.fastrand
 func runtimefastrand() uint32
 
-func runtimefastrand64() uint64 {
-	return (uint64(runtimefastrand()) << 32) | uint64(runtimefastrand())
-}
+//go:linkname runtimefastrand64 runtime.fastrand64
+func runtimefastrand64() uint64
 
-func runtimefastrandu() uint {
-	// PtrSize is the size of a pointer in bytes - unsafe.Sizeof(uintptr(0)) but as an ideal constant.
-	// It is also the size of the machine's native word size (that is, 4 on 32-bit systems, 8 on 64-bit).
-	const PtrSize = 4 << (^uintptr(0) >> 63)
-	if PtrSize == 4 {
-		return uint(runtimefastrand())
-	}
-	return uint(runtimefastrand64())
-}
+//go:linkname runtimefastrandu runtime.fastrandu
+func runtimefastrandu() uint

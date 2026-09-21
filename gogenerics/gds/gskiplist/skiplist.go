@@ -2,6 +2,7 @@ package gskiplist
 
 import (
 	"fmt"
+	"iter"
 	"math/bits"
 
 	"github.com/miniLCT/gosb/gogenerics/gconstraints"
@@ -386,6 +387,30 @@ func (t *SkipList[K, V]) Prev(e *SkipListElement[K, V]) *SkipListElement[K, V] {
 // GetNodeCount returns the number of nodes currently in the skiplist.
 func (t *SkipList[K, V]) GetNodeCount() int {
 	return t.elementCount
+}
+
+// All returns an iterator over the key-value pairs of the skiplist in
+// ascending key order.
+func (t *SkipList[K, V]) All() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for e := t.GetSmallestNode(); e != nil; e = e.next[0] {
+			if !yield(e.key, e.value) {
+				return
+			}
+		}
+	}
+}
+
+// Backward returns an iterator over the key-value pairs of the skiplist in
+// descending key order.
+func (t *SkipList[K, V]) Backward() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for e := t.GetLargestNode(); e != nil; e = e.prev {
+			if !yield(e.key, e.value) {
+				return
+			}
+		}
+	}
 }
 
 // ChangeValue can be used to change the actual value of a node in the skiplist

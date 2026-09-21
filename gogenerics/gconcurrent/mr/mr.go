@@ -305,10 +305,12 @@ func executeMappers[T, U any](mCtx mapperContext[T, U]) {
 		drain(mCtx.source)
 	}()
 
-	var failed int32
+	// failed uses the go1.19 atomic types instead of an int32 plus
+	// atomic.LoadInt32/atomic.AddInt32, it is race free by construction.
+	var failed atomic.Bool
 	pool := make(chan struct{}, mCtx.workers)
 	writer := newGuardedWriter(mCtx.ctx, mCtx.collector, mCtx.doneChan)
-	for atomic.LoadInt32(&failed) == 0 {
+	for !failed.Load() {
 		select {
 		case <-mCtx.ctx.Done():
 			return
@@ -321,19 +323,18 @@ func executeMappers[T, U any](mCtx mapperContext[T, U]) {
 				return
 			}
 
-			wg.Add(1)
-			go func() {
+			// wg.Go (go1.25) replaces wg.Add(1) + go func() { defer wg.Done() ... }.
+			wg.Go(func() {
 				defer func() {
 					if r := recover(); r != nil {
-						atomic.AddInt32(&failed, 1)
+						failed.Store(true)
 						mCtx.panicChan.write(r)
 					}
-					wg.Done()
 					<-pool
 				}()
 
 				mCtx.mapper(item, writer)
-			}()
+			})
 		}
 	}
 }
@@ -381,11 +382,11 @@ func (gw guardedWriter[T]) Write(v T) {
 
 type onceChan struct {
 	channel chan any
-	wrote   int32
+	wrote   atomic.Bool
 }
 
 func (oc *onceChan) write(val any) {
-	if atomic.CompareAndSwapInt32(&oc.wrote, 0, 1) {
+	if oc.wrote.CompareAndSwap(false, true) {
 		oc.channel <- val
 	}
 }

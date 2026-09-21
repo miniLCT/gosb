@@ -1,8 +1,9 @@
 package gmap
 
 import (
+	"cmp"
 	"fmt"
-	"sort"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,10 +32,9 @@ func TestKeys(t *testing.T) {
 
 	keys1 := Keys(mp1)
 	keys2 := Keys(mp2)
-	// TODO: maybe can use this package func to sort
-	sort.Strings(keys1)
+	slices.Sort(keys1)
 	stdKeys1 := []string{"100", "11", "a", "b", "c"}
-	sort.Float64s(keys2)
+	slices.Sort(keys2)
 	stdKeys2 := []float64{-514, -0, 1.1, 100.00000}
 
 	assert.Equal(stdKeys1, keys1)
@@ -98,8 +98,8 @@ func TestMap2Entries(t *testing.T) {
 		3:  map[string]any{"3": 3},
 	}
 	entries := Map2Entries(mp)
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Key < entries[j].Key
+	slices.SortFunc(entries, func(a, b gconstraints.Entry[int64, any]) int {
+		return cmp.Compare(a.Key, b.Key)
 	})
 	stdEntries := []gconstraints.Entry[int64, any]{
 		{Key: -1, Value: "-1"},

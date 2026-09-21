@@ -1,4 +1,13 @@
+// Package gset implements a generic hash set on top of the built-in map.
 package gset
+
+import (
+	"iter"
+	"maps"
+	"slices"
+
+	"github.com/miniLCT/gosb/gogenerics/gconstraints"
+)
 
 // Set is the hashset datastructure
 type Set[T comparable] map[T]struct{}
@@ -13,6 +22,21 @@ func NewSet[T comparable]() Set[T] {
 func NewSetWithSize[T comparable](size int) Set[T] {
 	s := make(Set[T], size)
 	return s
+}
+
+// NewSetFrom collects the values of seq into a new set.
+func NewSetFrom[T comparable](seq iter.Seq[T]) Set[T] {
+	s := NewSet[T]()
+	for v := range seq {
+		s[v] = struct{}{}
+	}
+	return s
+}
+
+// All returns an iterator over the elements of the set.
+// Note that the elements will be yielded in an indeterminate order.
+func (s Set[T]) All() iter.Seq[T] {
+	return maps.Keys(s)
 }
 
 // Len returns the number of elements of this set
@@ -45,16 +69,18 @@ func Remove[T comparable](s Set[T], e T) bool {
 // Items returns a slice of elements from the set. Note that the elements will be an indeterminate order
 func Items[T comparable](s Set[T]) []T {
 	items := make([]T, 0, len(s))
-
-	for k := range s {
+	for k := range s.All() {
 		items = append(items, k)
 	}
 	return items
 }
 
+// SortedItems returns a slice of elements from the set in ascending order
+func SortedItems[T gconstraints.Ordered](s Set[T]) []T {
+	return slices.Sorted(s.All())
+}
+
 // Clear removes all the elements from this set
 func Clear[T comparable](s Set[T]) {
-	for k := range s {
-		delete(s, k)
-	}
+	clear(s)
 }
